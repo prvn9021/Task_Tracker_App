@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:task_tracker_app/data_manager.dart';
 
-void main() {
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  DataManager.initializeData();
+  DataManager.startPeriodicRefresh();
   runApp(const MainApp());
 }
 
@@ -11,14 +16,14 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(scaffoldBackgroundColor: Colors.black,),
-      home: HomePage(),
+      home: const HomePage(),
     );
   }
 }
 
 class HomePage extends StatelessWidget {
   const HomePage( {super.key});
-  
+  @override
   Widget build(BuildContext context) {
     return Scaffold (
       appBar: AppBar(

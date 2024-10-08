@@ -1,0 +1,12 @@
+[
+    {   "task_name":"First Task",
+        "description":"To have a look at the first task.",
+        "current_step":1,
+        "status":1,
+        "steps":[
+            {"no":1,"content":"First step of task"},
+            {"no":2,"content":"Second step of task"},
+            {"no":3,"content":"Third step of task"}
+        ]
+    }
+]
