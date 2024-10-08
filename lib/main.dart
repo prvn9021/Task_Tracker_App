@@ -1,5 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'package:task_tracker_app/data_manager.dart';
+import 'package:task_tracker_app/tasks.dart';
 
 
 Future<void> main() async {
@@ -38,10 +40,57 @@ class HomePage extends StatelessWidget {
             tooltip: 'Create Tasks'),
         ],
       ),
+      body: ListView.builder(
+        itemCount: DataManager.data.length,
+        itemBuilder: (context,index) {
+          final task = DataManager.data[index];
+          return ListTile(
+  leading: Icon(Icons.task),
+  title: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Flexible(child: Text(
+        task.taskName, 
+        style: TextStyle(fontStyle: FontStyle.normal, color: Colors.white),
+      ),),
+      Flexible( child: Text(
+extractStepWithComment(task), style: TextStyle(color: Colors.grey),
+      ),),
+    ],
+  ),
+  trailing: taskStatus(task.status, task),
+);
+        }
+      ),
     );
   }
   
   
+}
+
+IconButton taskStatus(int status, Task task) {
+  switch(status){
+      case 1:return IconButton(icon : Icon(Icons.power_settings_new, color: Colors.blue), tooltip: "Not Started", onPressed: changeStatus(task)); 
+      case 2:return IconButton(icon : Icon(Icons.radar, color: Colors.red), tooltip: "Active", onPressed: () {changeStatus(task);}); 
+      case 3:return IconButton(icon : Icon(Icons.published_with_changes, color: Colors.green), tooltip: "Done", onPressed: () {changeStatus(task);});
+      default: return IconButton(icon : Icon(Icons.question_mark), tooltip: "Have no clue", onPressed: () {changeStatus(task);});
+  }
+}
+
+
+
+String extractStepWithComment(Task task) {
+  String info = 'Step not found!';
+  task.steps.forEach((step) {
+    if (task.currentStep==step.no){
+      info = '"${step.content}"\n${step.comment}';
+    }
+  }
+  );
+  return info;
+}
+
+changeStatus(Task task) {
 }
 
 createTask() {

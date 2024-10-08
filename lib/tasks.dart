@@ -1,26 +1,29 @@
-import 'dart:convert';
+//Tasks Data Structure Class
 
 class Step {
   int no;
   String content;
+  String comment;
 
   Step({
     required this.no,
     required this.content,
+    required this.comment,
   });
 
   factory Step.fromJson(Map<String, dynamic> json) {
     return Step(
       no: json['no'],
       content: json['content'],
+      comment: json['comment'],
     );
   }
-
 
   Map<String, dynamic> toJson() {
     return {
       'no': no,
       'content': content,
+      'comment': comment
     };
   }
 }
