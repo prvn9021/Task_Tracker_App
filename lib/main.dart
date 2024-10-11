@@ -1,13 +1,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:task_tracker_app/data_manager.dart';
+import 'package:task_tracker_app/taskPage.dart';
 import 'package:task_tracker_app/tasks.dart';
 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  DataManager.initializeData();
-  DataManager.startPeriodicRefresh();
+  await DataManager.initializeData();
+  //DataManager.startPeriodicRefresh();
   runApp(const MainApp());
 }
 
@@ -35,7 +36,12 @@ class HomePage extends StatelessWidget {
           IconButton(onPressed: searchTask(), 
             icon: const Icon(Icons.search, color: Colors.white,), 
             tooltip: 'Search Tasks'),
-          IconButton(onPressed: createTask(), 
+          IconButton(onPressed: (){
+            Navigator.push(
+              context, 
+              MaterialPageRoute(builder: (context) => TaskPage(Task(taskName: "", description: "", currentStep: 0, status: 1, steps: []), true)),
+            );
+            }, 
             icon: const Icon(Icons.add_task, color: Colors.white,),
             tooltip: 'Create Tasks'),
         ],
@@ -64,8 +70,6 @@ extractStepWithComment(task), style: TextStyle(color: Colors.grey),
       ),
     );
   }
-  
-  
 }
 
 IconButton taskStatus(int status, Task task) {
@@ -76,8 +80,6 @@ IconButton taskStatus(int status, Task task) {
       default: return IconButton(icon : Icon(Icons.question_mark), tooltip: "Have no clue", onPressed: () {changeStatus(task);});
   }
 }
-
-
 
 String extractStepWithComment(Task task) {
   String info = 'Step not found!';
