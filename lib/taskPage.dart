@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:task_tracker_app/data_manager.dart';
 import 'package:task_tracker_app/tasks.dart' as taskModel;
 
 class TaskPage extends StatefulWidget {
@@ -12,8 +13,6 @@ class TaskPage extends StatefulWidget {
 }
 
 class _TaskPageState extends State<TaskPage> {
-  List<taskModel.Step> steps = [];
-  int _selectedStatus = 1;
 
   @override
   void initState() {
@@ -69,11 +68,11 @@ class _TaskPageState extends State<TaskPage> {
                 padding: const EdgeInsets.all(8.0),
                 width: MediaQuery.of(context).size.width * 0.8,
                 child: DropdownButton<int>(
-                  value: _selectedStatus,
+                  value: widget.task.status,
                   dropdownColor: Colors.grey[850],
                   onChanged: (int? newValue) {
                     setState(() {
-                      _selectedStatus = newValue!;
+                     widget.task.status = newValue!;
                     });
                   },
                   items: {
@@ -91,8 +90,8 @@ class _TaskPageState extends State<TaskPage> {
                   }).toList(),
                 ),
               ),
-              ...List.generate(steps.length, (index) {
-                return _buildStepWidget(steps[index], index);
+              ...List.generate(widget.task.steps.length, (index) {
+                return _buildStepWidget(widget.task.steps[index], index);
               }),           
               ElevatedButton(
                 onPressed: _addStep,
@@ -102,11 +101,27 @@ class _TaskPageState extends State<TaskPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: ElevatedButton(
                 onPressed: () {
-                  debugPrint("Saved!!");
+                  _saveTask();
+                  AlertDialog(semanticLabel: "Saved Task!");
+                  Navigator.pop(context, widget.task);
                 },
                 child: const Text("Save Task"),
                 ),
-              )
+              ),
+              Padding(padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              textStyle: TextStyle(color: Colors.black), // Red color for the delete button
+              ),
+                onPressed: () {
+                  _deleteTask();
+                  AlertDialog(semanticLabel: "Deleted Task!");
+                  Navigator.pop(context, widget.task);
+                },
+                child: const Text("Delete"),
+                ),
+                ),
             ],
           ),
         ),
@@ -182,18 +197,18 @@ Widget _buildStepWidget(taskModel.Step step, int index) {
 
   void _addStep() {
     setState(() {
-    steps.add(taskModel.Step(no: (steps.length), content: "", comment: ""));
+    widget.task.steps.add(taskModel.Step(no: (widget.task.steps.length), content: "", comment: ""));
     });
   }
   
   void _removeStep(int index) {
     setState(() {
-   steps.removeAt(index);
+   widget.task.steps.removeAt(index);
    if(widget.task.currentStep == index) {
     widget.task.currentStep = -1;
    }
-    for(var i = 0; i < steps.length; i++){
-        steps[i].no = i;
+    for(var i = 0; i < widget.task.steps.length; i++){
+        widget.task.steps[i].no = i;
     }
     });
    
@@ -203,6 +218,24 @@ Widget _buildStepWidget(taskModel.Step step, int index) {
     setState((){
       widget.task.currentStep = no;
     });
+  }
+  
+  void _saveTask() {
+    taskModel.Task currTask = taskModel.Task(
+        taskName: widget.task.taskName,
+        description: widget.task.description,
+        currentStep: widget.task.currentStep, 
+        status: widget.task.status,
+        steps: widget.task.steps);
+    if(widget.newTask) {
+      DataManager.data.add(currTask);
+      }
+    DataManager.updateData();
+  }
+
+  _deleteTask() {
+    DataManager.data.remove(widget.task);
+    DataManager.updateData();
   }
 }
 

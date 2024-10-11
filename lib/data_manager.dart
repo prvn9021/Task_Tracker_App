@@ -13,7 +13,7 @@ class DataManager {
 
   static Future<void> initializeData() async {
    final SharedPreferences prefs = await SharedPreferences.getInstance();
-   prefs.setString('data','[{"task_name":"First Task","description":"To have a look at the first task.","current_step":3,"status":3,"steps":[{"no":1,"content":"First step of task","comment":"waiting for approval"},{"no":2,"content":"Second step of task","comment":"problems with the thing, but solved!"},{"no":3,"content":"Third step of task","comment":"done, it took like 3 days, phew!"}]}]');
+  //prefs.setString('data','[{"task_name":"First Task","description":"To have a look at the first task.","current_step":3,"status":3,"steps":[{"no":1,"content":"First step of task","comment":"waiting for approval"},{"no":2,"content":"Second step of task","comment":"problems with the thing, but solved!"},{"no":3,"content":"Third step of task","comment":"done, it took like 3 days, phew!"}]}]');
    final String? jsonString = prefs.getString('data');
 
     try {
@@ -50,5 +50,12 @@ class DataManager {
 
   static void startPeriodicRefresh() {
     Timer.periodic(const Duration(minutes: 1), (Timer t) => refreshData());
+  }
+
+  static void updateData() async {
+    List<Map<String, dynamic>> jsonList = data.map((task) => task.toJson()).toList();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('data',jsonEncode(jsonList));
+    debugPrint(prefs.getString('data'));
   }
 }
