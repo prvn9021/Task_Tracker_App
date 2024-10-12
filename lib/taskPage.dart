@@ -64,6 +64,16 @@ class _TaskPageState extends State<TaskPage> {
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
+              Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    const Text(
+      '   Task Status',
+      style: TextStyle(
+        fontSize: 12,
+        color: Colors.grey,
+      ),
+    ),
               Container(
                 padding: const EdgeInsets.all(8.0),
                 width: MediaQuery.of(context).size.width * 0.8,
@@ -90,36 +100,39 @@ class _TaskPageState extends State<TaskPage> {
                   }).toList(),
                 ),
               ),
+              ]),
               ...List.generate(widget.task.steps.length, (index) {
                 return _buildStepWidget(widget.task.steps[index], index);
               }),           
               ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor:Colors.blue ),
+
                 onPressed: _addStep,
-                child: const Text("Add Step"),
+                child: const Text("Add Step", style: TextStyle(color: Colors.white)),
               ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor:Colors.blue ),
                 onPressed: () {
                   _saveTask();
                   AlertDialog(semanticLabel: "Saved Task!");
                   Navigator.pop(context, widget.task);
                 },
-                child: const Text("Save Task"),
+                child: const Text("Save Task", style: TextStyle(color: Colors.white)),
                 ),
               ),
               Padding(padding: const EdgeInsets.all(16.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              textStyle: TextStyle(color: Colors.black), // Red color for the delete button
               ),
                 onPressed: () {
                   _deleteTask();
                   AlertDialog(semanticLabel: "Deleted Task!");
                   Navigator.pop(context, widget.task);
                 },
-                child: const Text("Delete"),
+                child: const Text("Delete", style: TextStyle(color: Colors.black)),
                 ),
                 ),
             ],
@@ -129,11 +142,7 @@ class _TaskPageState extends State<TaskPage> {
     );
   }
 
-Widget _buildStepWidget(taskModel.Step step, int index) {
-    TextEditingController stepContentController =
-      TextEditingController(text: step.content);
-  TextEditingController stepCommentController =
-      TextEditingController(text: step.comment);
+  Widget _buildStepWidget(taskModel.Step step, int index) {
   return Container(
     padding: const EdgeInsets.all(8.0),
     width: MediaQuery.of(context).size.width * 0.8,
@@ -142,32 +151,72 @@ Widget _buildStepWidget(taskModel.Step step, int index) {
         Row(
           children: [
             Expanded(
-              child: TextFormField(
-                controller: stepContentController,
-                decoration: const InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: "Step Content",
-                  labelStyle: TextStyle(color: Colors.grey),
-                ),
-                onChanged: (value) {
-                  step.content = value;
+              child: GestureDetector(
+                onTap: () {
+                  _showEditDialog(
+                    context,
+                    'Step Name', 
+                    step.content, 
+                    (newContent) {
+                      setState(() {
+                        step.content = newContent;
+                      });
+                    },
+                  );
                 },
-                style: const TextStyle(color: Colors.white),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Step Name',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      step.content.isEmpty ? 'Tap to edit Step Name' : step.content,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: TextFormField(
-                controller: stepCommentController,
-                decoration: const InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: "Comment",
-                  labelStyle: TextStyle(color: Colors.grey),
-                ),
-                onChanged: (value) {
-                  step.comment = value;
+              child: GestureDetector(
+                onTap: () {
+                  _showEditDialog(
+                    context, 
+                    'Comment', 
+                    step.comment, 
+                    (newComment) {
+                      setState(() {
+                        step.comment = newComment;
+                      });
+                    },
+                  );
                 },
-                style: const TextStyle(color: Colors.white),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Comment',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      step.comment.isEmpty ? 'Tap to edit Comment' : step.comment,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(width: 10),
@@ -178,6 +227,10 @@ Widget _buildStepWidget(taskModel.Step step, int index) {
                   _setCurrentStep(step.no);
                 }
               },
+            ),
+            IconButton(
+              icon: stepStatusIcon(step),
+              onPressed: () => {openToggledialog(step)},
             ),
           ],
         ),
@@ -193,11 +246,52 @@ Widget _buildStepWidget(taskModel.Step step, int index) {
       ],
     ),
   );
-}  
+}
+
+void _showEditDialog(BuildContext context, String title, String initialText, Function(String) onSave) {
+  TextEditingController textController = TextEditingController(text: initialText);
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.grey[850],  
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: textController,
+          maxLines: null,  
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            labelText: title,
+            labelStyle: const TextStyle(color: Colors.grey),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor:Colors.blue ),
+            onPressed: () {
+              onSave(textController.text);  
+              Navigator.of(context).pop(); 
+            },
+            child: const Text('Save', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   void _addStep() {
     setState(() {
-    widget.task.steps.add(taskModel.Step(no: (widget.task.steps.length), content: "", comment: ""));
+    widget.task.steps.add(taskModel.Step(no: (widget.task.steps.length), content: "", comment: "", status:1));
     });
   }
   
@@ -237,5 +331,69 @@ Widget _buildStepWidget(taskModel.Step step, int index) {
     DataManager.data.remove(widget.task);
     DataManager.updateData();
   }
+
+void openToggledialog(taskModel.Step step) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      List<bool> isSelected = [
+        step.status == 1,
+        step.status == 2,
+        step.status == 3,
+      ];
+
+      return AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text('Choose Status for Step, ${step.content}', style: TextStyle(color: Colors.white),),
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ToggleButtons(
+                  isSelected: isSelected,
+                  onPressed: (int selectedIndex) {
+                    setState(() {
+                      for (int i = 0; i < isSelected.length; i++) {
+                        isSelected[i] = i == selectedIndex;
+                      }
+                      step.status = selectedIndex + 1;
+                    });
+                  },
+                  children: const <Widget>[
+                    Icon(Icons.power_settings_new, color: Colors.blue),
+                    Icon(Icons.radar, color: Colors.yellow),
+                    Icon(Icons.published_with_changes, color: Colors.green),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); 
+              setState(() {});  
+            },
+            child: const Text('Done'),
+          ),
+        ],
+      );
+    },
+  );
 }
 
+  Icon stepStatusIcon(taskModel.Step step) {
+  switch (step.status) {
+    case 1:
+      return Icon(Icons.power_settings_new, color: Colors.blue);
+    case 2:
+      return Icon(Icons.radar, color: Colors.yellow);
+    case 3:
+      return Icon(Icons.published_with_changes, color: Colors.green);
+    default:
+      return Icon(Icons.question_mark);
+  }
+}
+}

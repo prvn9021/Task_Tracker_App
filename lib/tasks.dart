@@ -4,11 +4,13 @@ class Step {
   int no;
   String content;
   String comment;
+  int status;
 
   Step({
     required this.no,
     required this.content,
     required this.comment,
+    required this.status
   });
 
   factory Step.fromJson(Map<String, dynamic> json) {
@@ -16,6 +18,7 @@ class Step {
       no: json['no'],
       content: json['content'],
       comment: json['comment'],
+      status: json['status']
     );
   }
 
@@ -23,7 +26,8 @@ class Step {
     return {
       'no': no,
       'content': content,
-      'comment': comment
+      'comment': comment,
+      'status': status 
     };
   }
 }
