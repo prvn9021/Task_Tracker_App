@@ -66,6 +66,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 10),
                   ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor:Colors.blue ),
                     onPressed: () async {
                       await Navigator.push(
                         context,
@@ -73,7 +74,7 @@ class _HomePageState extends State<HomePage> {
                       );
                       setState(() {});
                     },
-                    child: const Text('Create Task'),
+                    child: const Text('Create Task', style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),
