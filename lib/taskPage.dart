@@ -13,6 +13,7 @@ class TaskPage extends StatefulWidget {
 }
 
 class _TaskPageState extends State<TaskPage> {
+  bool hasUnsavedChanges = false;
 
   @override
   void initState() {
@@ -21,7 +22,9 @@ class _TaskPageState extends State<TaskPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+     onWillPop: _discardConfirm,
+    child:Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey[700],
         title: Text(widget.newTask ? "Create New Task!" : "Edit Task!",
@@ -83,6 +86,7 @@ class _TaskPageState extends State<TaskPage> {
                   onChanged: (int? newValue) {
                     setState(() {
                      widget.task.status = newValue!;
+                     hasUnsavedChanges = true;
                     });
                   },
                   items: {
@@ -128,9 +132,7 @@ class _TaskPageState extends State<TaskPage> {
               backgroundColor: Colors.red,
               ),
                 onPressed: () {
-                  _deleteTask();
-                  AlertDialog(semanticLabel: "Deleted Task!");
-                  Navigator.pop(context, widget.task);
+                  _showDeleteConfirmationDialog();
                 },
                 child: const Text("Delete", style: TextStyle(color: Colors.black)),
                 ),
@@ -139,7 +141,32 @@ class _TaskPageState extends State<TaskPage> {
           ),
         ),
       ),
+    ),
     );
+  }
+
+  Future<bool> _discardConfirm() async {
+    if (hasUnsavedChanges) {
+      return await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.grey[850],
+          title: const Text('Discard Changes?', style: TextStyle(color: Colors.white)),
+          content: const Text('You have unsaved changes. Do you want to discard them?', style: TextStyle(color: Colors.white)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('No', style: TextStyle(color: Colors.white)),
+            ),
+            TextButton(
+              onPressed: () => {DataManager.initializeData(), Navigator.of(context).pop(true)},
+              child: const Text('Yes', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ) ?? false;  
+    }
+    return true;
   }
 
   Widget _buildStepWidget(taskModel.Step step, int index) {
@@ -159,6 +186,7 @@ class _TaskPageState extends State<TaskPage> {
                     step.content, 
                     (newContent) {
                       setState(() {
+                        hasUnsavedChanges = true;
                         step.content = newContent;
                       });
                     },
@@ -193,6 +221,7 @@ class _TaskPageState extends State<TaskPage> {
                     'Comment', 
                     step.comment, 
                     (newComment) {
+                      hasUnsavedChanges = true;
                       setState(() {
                         step.comment = newComment;
                       });
@@ -224,6 +253,7 @@ class _TaskPageState extends State<TaskPage> {
               value: widget.task.currentStep == step.no,
               onChanged: (bool? isChecked) {
                 if (isChecked != null && isChecked) {
+                  hasUnsavedChanges = true;
                   _setCurrentStep(step.no);
                 }
               },
@@ -297,6 +327,7 @@ void _showEditDialog(BuildContext context, String title, String initialText, Fun
   
   void _removeStep(int index) {
     setState(() {
+      hasUnsavedChanges = true;
    widget.task.steps.removeAt(index);
    if(widget.task.currentStep == index) {
     widget.task.currentStep = -1;
@@ -310,6 +341,7 @@ void _showEditDialog(BuildContext context, String title, String initialText, Fun
 
   void _setCurrentStep(int no) {
     setState((){
+      hasUnsavedChanges = true;
       widget.task.currentStep = no;
     });
   }
@@ -321,10 +353,10 @@ void _showEditDialog(BuildContext context, String title, String initialText, Fun
         currentStep: widget.task.currentStep, 
         status: widget.task.status,
         steps: widget.task.steps);
-    if(widget.newTask) {
+      if(widget.newTask) {
       DataManager.data.add(currTask);
       }
-    DataManager.updateData();
+      DataManager.updateData();
   }
 
   _deleteTask() {
@@ -374,7 +406,7 @@ void openToggledialog(taskModel.Step step) {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); 
-              setState(() {});  
+              setState(() {hasUnsavedChanges = true;});  
             },
             child: const Text('Done'),
           ),
@@ -394,6 +426,45 @@ void openToggledialog(taskModel.Step step) {
       return Icon(Icons.published_with_changes, color: Colors.green);
     default:
       return Icon(Icons.question_mark);
+    }
   }
+
+  void _showDeleteConfirmationDialog() {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.grey[850],
+        title: const Text(
+          'Confirm Delete',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'Are you sure you want to delete this task?',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); 
+            },
+            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              _deleteTask();  
+              Navigator.of(context).pop(); 
+              Navigator.pop(context, widget.task); 
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      );
+    },
+  );
 }
+
+
 }
+

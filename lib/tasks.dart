@@ -38,6 +38,7 @@ class Task {
   int currentStep;
   int status;
   List<Step> steps;
+  bool archived;
 
   Task({
     required this.taskName,
@@ -45,6 +46,7 @@ class Task {
     required this.currentStep,
     required this.status,
     required this.steps,
+    this.archived = false,
   });
 
   factory Task.fromJson(Map<String, dynamic> json) {
@@ -57,6 +59,7 @@ class Task {
       currentStep: json['current_step'],
       status: json['status'],
       steps: steps,
+      archived: json['archived'],
     );
   }
 
@@ -67,6 +70,7 @@ class Task {
       'current_step': currentStep,
       'status': status,
       'steps': steps.map((step) => step.toJson()).toList(),
+      'archived': archived
     };
   }
 }
