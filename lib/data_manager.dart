@@ -1,61 +1,85 @@
-
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:task_tracker_app/tasks.dart';
 
-class DataManager {
-  static String fileName = 'data.json';
+class DataManager  {
   static List<Task> _data = [];
+  static final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();  
 
   static Future<void> initializeData() async {
-   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  //prefs.setString('data','[{"task_name":"First Task","description":"To have a look at the first task.","current_step":3,"status":3,"steps":[{"no":1,"content":"First step of task","comment":"waiting for approval"},{"no":2,"content":"Second step of task","comment":"problems with the thing, but solved!"},{"no":3,"content":"Third step of task","comment":"done, it took like 3 days, phew!"}]}]');
-   final String? jsonString = prefs.getString('data');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? uid = prefs.getString('uid');
 
     try {
-      List<dynamic> jsonList = jsonDecode(jsonString!);
-      _data = jsonList.map((taskJson) => Task.fromJson(taskJson)).toList();
-    } catch (e) {
-      debugPrint("Error parsing JSON: $e");
-    }
+      final DatabaseEvent event = await _dbRef.child('users/$uid/data').once();
+      final DataSnapshot snapshot = event.snapshot;
+      
+      if (snapshot.exists) {
+         List<dynamic> jsonList =  jsonDecode(snapshot.value as String);
+        _data = jsonList.map((taskJson) => Task.fromJson(taskJson)).toList();
+      } else {
+        debugPrint('No tasks found for user: ${uid}');
+      }
 
-    _data.forEach((task) {
-      debugPrint('Task Name: ${task.taskName}');
-      debugPrint('Task Description: ${task.description}');
-      debugPrint('Current Step: ${task.currentStep}');
-      debugPrint('Status: ${task.status}');
-      task.steps.forEach((step) {
-        debugPrint('Step No: ${step.no}, Step Content: ${step.content}, Comment: ${step.comment}');
+      _data.forEach((task) {
+        debugPrint('Task Name: ${task.taskName}');
+        debugPrint('Task Description: ${task.description}');
+        debugPrint('Current Step: ${task.currentStep}');
+        debugPrint('Status: ${task.status}');
+        task.steps.forEach((step) {
+          debugPrint('Step No: ${step.no}, Step Content: ${step.content}, Comment: ${step.comment}');
+        });
       });
-    });
+    } catch (e) {
+      debugPrint("Error fetching tasks from Firebase: $e");
+    }
   }
 
-  static Future<void> refreshData() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-   final String? jsonString = prefs.getString('data');
-
+  static Future<void> refreshData(String uid) async {
     try {
-      List<dynamic> jsonList = jsonDecode(jsonString!);
-      _data = jsonList.map((taskJson) => Task.fromJson(taskJson)).toList();
+      final DatabaseEvent event = await _dbRef.child('users/$uid/data').once();
+      final DataSnapshot snapshot = event.snapshot;
+
+      if (snapshot.exists) {
+        List<dynamic> jsonList =  jsonDecode(snapshot.value as String);
+        _data = jsonList.map((taskJson) => Task.fromJson(taskJson)).toList();
+      } else {
+        debugPrint('No tasks found for user: $uid');
+      }
     } catch (e) {
-      debugPrint("Error parsing JSON: $e");
+      debugPrint("Error refreshing tasks from Firebase: $e");
     }
   }
 
   static List<Task> get data => _data;
 
-  static void startPeriodicRefresh() {
-    Timer.periodic(const Duration(minutes: 1), (Timer t) => refreshData());
+  static void startPeriodic(String uid) {
+    Timer.periodic(const Duration(minutes: 1), (Timer t) => refreshData(uid));
   }
 
   static void updateData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? uid = prefs.getString('uid');
     List<Map<String, dynamic>> jsonList = data.map((task) => task.toJson()).toList();
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('data',jsonEncode(jsonList));
-    debugPrint(prefs.getString('data'));
+    try {
+      await _dbRef.child('users/$uid/data').set(jsonEncode(jsonList));
+      debugPrint("Data updated to Firebase for user: $uid");
+    } catch (e) {
+      debugPrint("Error updating data to Firebase: $e");
+    }
   }
+
+  static Future<String?> getUserName() async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      return prefs.getString("username");
+  }
+
+  static Future<String?> getUid() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('uid');
+  }
+
 }
