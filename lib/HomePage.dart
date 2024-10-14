@@ -208,31 +208,37 @@ class _HomePageState extends State<HomePage> {
                         _showStepDetailsDialog(context, task);
                       },
                       child: ListTile(
-                        leading: const Icon(Icons.task),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                task.taskName,
-                                style: const TextStyle(fontStyle: FontStyle.normal, color: Colors.white),
-                                textAlign: TextAlign.left,
-                              ),
-                            ),
-                            Flexible(
-                              child: Text(
-                                extractStepWithEllipsis(task),
-                                style: const TextStyle(color: Colors.grey),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.left,
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: taskStatus(task.status, task),
-                      ),
-                    ),
+  leading: SizedBox(
+    width: MediaQuery.of(context).size.width * 0.1,
+    child: const Icon(Icons.task),
+  ),
+  title: Row(
+    children: [
+      Expanded(
+        flex: 4, 
+        child: Text(
+          task.taskName,
+          style: const TextStyle(fontStyle: FontStyle.normal, color: Colors.white),
+          textAlign: TextAlign.left,
+        ),
+      ),
+      Expanded(
+        flex: 4,
+        child: Text(
+          extractStepWithEllipsis(task),
+          style: const TextStyle(color: Colors.grey),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.left,
+        ),
+      ),
+    ],
+  ),
+  trailing: SizedBox(
+    width: MediaQuery.of(context).size.width * 0.1, 
+    child: taskStatus(task.status, task),
+  ),
+),                  ),
                   );
                 },
               ),
