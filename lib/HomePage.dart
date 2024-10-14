@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:task_tracker_app/ArchivedTasksPage.dart';
 import 'package:task_tracker_app/AuthPage.dart';
@@ -17,6 +19,31 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _refreshData();
+    });
+  }
+
+  Future<void> _refreshData() async {
+    setState(() {
+      DataManager.refreshData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +54,14 @@ class _HomePageState extends State<HomePage> {
           'Task Tracker',
           style: TextStyle(fontStyle: FontStyle.italic, color: Colors.white),
         ),
-        actions: <Widget>[
+        actions: <Widget>[ if(kIsWeb) (
+          IconButton(
+            onPressed: () async {
+              await _refreshData(); // Call refresh data on button press
+            },
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            tooltip: 'Refresh Tasks',
+          )),
           IconButton(
             onPressed: () async {
               await Navigator.push(
@@ -41,17 +75,19 @@ class _HomePageState extends State<HomePage> {
           ),
           IconButton(
             onPressed: () async {
+              DataManager.refreshData();
               await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TaskPage(
                     Task(
-                      taskName: "", 
-                      description: "", 
-                      currentStep: 0, 
-                      status: 1, 
+                      taskName: "",
+                      description: "",
+                      currentStep: 0,
+                      status: 1,
                       steps: [],
-                    ), 
+                      id: Task.generateRandomString(),
+                    ),
                     true,
                   ),
                 ),
@@ -66,7 +102,7 @@ class _HomePageState extends State<HomePage> {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ArchivedTasksPage(), 
+                  builder: (context) => ArchivedTasksPage(),
                 ),
               );
               setState(() {});
@@ -75,138 +111,146 @@ class _HomePageState extends State<HomePage> {
             tooltip: 'View Archived Tasks',
           ),
           IconButton(
-            onPressed: () => _logout(context), 
-            icon: const Icon(Icons.logout, color: Colors.white), 
+            onPressed: () => _logout(context),
+            icon: const Icon(Icons.logout, color: Colors.white),
             tooltip: 'Logout',
           ),
         ],
       ),
-      body: getUnarchivedList(DataManager.data).isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'No tasks to display',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TaskPage(
-                            Task(
-                              taskName: "", 
-                              description: "", 
-                              currentStep: 0, 
-                              status: 1, 
-                              steps: [],
-                            ), 
-                            true,
-                          ),
-                        ),
-                      );
-                      setState(() {});
-                    },
-                    child: const Text('Create Task', style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              itemCount: getUnarchivedList(DataManager.data).length,
-              itemBuilder: (context, index) {
-                final task = getUnarchivedList(DataManager.data)[index];
-                return Slidable(
-                  key: Key(task.taskName),
-                  endActionPane: ActionPane(
-                    motion: const DrawerMotion(),
-                    children: [
-                      SlidableAction(
-                        onPressed: (context) async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TaskPage(task, false),
-                            ),
-                          );
-                          setState(() {});
-                        },
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        icon: Icons.edit,
-                        label: 'Edit',
-                      ),
-                      SlidableAction(
-                        onPressed: (context) {
-                          _showDeleteConfirmationDialog(context, task);
-                        },
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        icon: Icons.delete,
-                        label: 'Delete',
-                      ),
-                      SlidableAction(
-                        onPressed: (context) {
-                          _archiveTask(task);
-                        },
-                        backgroundColor: Colors.grey,
-                        foregroundColor: Colors.white,
-                        icon: Icons.archive,
-                        label: 'Archive',
-                      ),
-                    ],
-                  ),
-                  child: GestureDetector(
-                    onTap: () {
-                      _showStepDetailsDialog(context, task);
-                    },
-                    child: ListTile(
-                      leading: const Icon(Icons.task),
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              task.taskName,
-                              style: const TextStyle(fontStyle: FontStyle.normal, color: Colors.white),
-                              textAlign: TextAlign.left,
-                            ),
-                          ),
-                          Flexible(
-                            child: Text(
-                              extractStepWithEllipsis(task),
-                              style: const TextStyle(color: Colors.grey),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.left,
-                            ),
-                          ),
-                        ],
-                      ),
-                      trailing: taskStatus(task.status, task),
+      body: RefreshIndicator(
+        onRefresh: _refreshData, // Add pull-to-refresh functionality
+        child: getUnarchivedList(DataManager.data).isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'No tasks to display',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
-                  ),
-                );
-              },
-            ),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TaskPage(
+                              Task(
+                                taskName: "",
+                                description: "",
+                                currentStep: 0,
+                                status: 1,
+                                steps: [],
+                                id: Task.generateRandomString(),
+                              ),
+                              true,
+                            ),
+                          ),
+                        );
+                        setState(() {});
+                      },
+                      child: const Text('Create Task', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              )
+            : ListView.builder(
+                itemCount: getUnarchivedList(DataManager.data).length,
+                itemBuilder: (context, index) {
+                  final task = getUnarchivedList(DataManager.data)[index];
+                  final id = task.id;
+                  return Slidable(
+                    key: Key(task.id),
+                    endActionPane: ActionPane(
+                      motion: const DrawerMotion(),
+                      children: [
+                        SlidableAction(
+                          onPressed: (context) async {
+                            setState(() {
+                              DataManager.refreshData();
+                            });
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TaskPage(Task.fetchTaskWithId(id), false),
+                              ),
+                            );
+                            setState(() {});
+                          },
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          icon: Icons.edit,
+                          label: 'Edit',
+                        ),
+                        SlidableAction(
+                          onPressed: (context) {
+                            _showDeleteConfirmationDialog(context, task);
+                          },
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          icon: Icons.delete,
+                          label: 'Delete',
+                        ),
+                        SlidableAction(
+                          onPressed: (context) {
+                            _archiveTask(task);
+                          },
+                          backgroundColor: Colors.grey,
+                          foregroundColor: Colors.white,
+                          icon: Icons.archive,
+                          label: 'Archive',
+                        ),
+                      ],
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        _showStepDetailsDialog(context, task);
+                      },
+                      child: ListTile(
+                        leading: const Icon(Icons.task),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                task.taskName,
+                                style: const TextStyle(fontStyle: FontStyle.normal, color: Colors.white),
+                                textAlign: TextAlign.left,
+                              ),
+                            ),
+                            Flexible(
+                              child: Text(
+                                extractStepWithEllipsis(task),
+                                style: const TextStyle(color: Colors.grey),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.left,
+                              ),
+                            ),
+                          ],
+                        ),
+                        trailing: taskStatus(task.status, task),
+                      ),
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 
   void _deleteTask(Task task) {
     setState(() {
       DataManager.data.remove(task);
-      DataManager.updateData();
+      DataManager.updateData(task, true);
     });
   }
 
   void _archiveTask(Task task) {
     setState(() {
-      task.archived = true; 
-      DataManager.updateData();
+      task.archived = true;
+      DataManager.updateData(task, false);
     });
   }
 
@@ -215,7 +259,7 @@ class _HomePageState extends State<HomePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('uid');
     await prefs.remove('data');
-    
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const AuthPage()),
@@ -300,16 +344,13 @@ void _showStepDetailsDialog(BuildContext context, Task task) {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Name:', style: TextStyle(color: Colors.grey)),
-            Text(stepContent, style: const TextStyle(color: Colors.white)),
+            Text('Content: $stepContent', style: const TextStyle(color: Colors.white)),
             const SizedBox(height: 10),
-            const Text('Comment:', style: TextStyle(color: Colors.grey)),
-            Text(stepComment, style: const TextStyle(color: Colors.white)),
+            Text('Comment: $stepComment', style: const TextStyle(color: Colors.white)),
           ],
         ),
         actions: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+          TextButton(
             onPressed: () {
               Navigator.of(context).pop();
             },
@@ -321,9 +362,6 @@ void _showStepDetailsDialog(BuildContext context, Task task) {
   );
 }
 
-String getTruncatedString(String text, int length) {
-  if (text.length > length) {
-    return '${text.substring(0, length)}...';
-  }
-  return text;
+String getTruncatedString(String input, int length) {
+  return input.length > length ? input.substring(0, length) + '...' : input;
 }

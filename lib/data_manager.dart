@@ -38,7 +38,9 @@ class DataManager  {
     }
   }
 
-  static Future<void> refreshData(String uid) async {
+  static Future<void> refreshData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? uid = prefs.getString('uid');
     try {
       final DatabaseEvent event = await _dbRef.child('users/$uid/data').once();
       final DataSnapshot snapshot = event.snapshot;
@@ -56,16 +58,38 @@ class DataManager  {
 
   static List<Task> get data => _data;
 
-  static void startPeriodic(String uid) {
-    Timer.periodic(const Duration(minutes: 1), (Timer t) => refreshData(uid));
-  }
-
-  static void updateData() async {
+  static void updateData(Task utask, bool isDelete ) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? uid = prefs.getString('uid');
-    List<Map<String, dynamic>> jsonList = data.map((task) => task.toJson()).toList();
+    bool newTask = true;
+    List<Map<String, dynamic>?> jsonList = data
+  .map((task) {
+    if (task.id==utask.id) { 
+      newTask = false;
+      if(isDelete) {
+        return null;
+      }
+      task.taskName = utask.taskName;
+      task.description = utask.description;
+      task.steps = utask.steps;
+      task.currentStep = utask.currentStep;
+      task.status = utask.status;
+      task.status = utask.status;
+      task.archived = utask.archived;
+      return task.toJson();
+    }
+    return task.toJson();
+  })
+  .where((json) => json != null) 
+  .toList();
+  if (newTask) {
+  jsonList.add(utask.toJson()); 
+}
+debugPrint("------");
+debugPrint(jsonEncode(jsonList));
     try {
       await _dbRef.child('users/$uid/data').set(jsonEncode(jsonList));
+      _data = jsonList.map((taskJson) => Task.fromJson(taskJson!)).toList();
       debugPrint("Data updated to Firebase for user: $uid");
     } catch (e) {
       debugPrint("Error updating data to Firebase: $e");

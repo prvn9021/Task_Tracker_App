@@ -149,7 +149,7 @@ class _AuthPageState extends State<AuthPage> {
         if (validate && (value == null || value.isEmpty)) {
           return '$hintText cannot be empty';
         }
-        if (hintText == "Email" && value != null && !RegExp(r"^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
+        if (hintText == "Email" && value != null && !RegExp("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").hasMatch(value)) {
           return 'Enter a valid email';
         }
         if (hintText == "Confirm Password" && value != _passwordController.text) {
@@ -234,6 +234,7 @@ class _AuthPageState extends State<AuthPage> {
         await prefs.setString('uid', uid);
         await prefs.setString('username', fetchedUsername);
         await DataManager.initializeData();
+       // DataManager.startPeriodic();
 
         Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (context) => HomePage(),

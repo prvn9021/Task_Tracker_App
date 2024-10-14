@@ -352,16 +352,17 @@ void _showEditDialog(BuildContext context, String title, String initialText, Fun
         description: widget.task.description,
         currentStep: widget.task.currentStep, 
         status: widget.task.status,
-        steps: widget.task.steps);
+        steps: widget.task.steps,
+        id: widget.task.id);
       if(widget.newTask) {
       DataManager.data.add(currTask);
       }
-      DataManager.updateData();
+      DataManager.updateData(currTask, false);
   }
 
   _deleteTask() {
     DataManager.data.remove(widget.task);
-    DataManager.updateData();
+    DataManager.updateData(widget.task, true);
   }
 
 void openToggledialog(taskModel.Step step) {

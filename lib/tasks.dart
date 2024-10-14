@@ -1,5 +1,8 @@
 //Tasks Data Structure Class
 
+import 'package:task_tracker_app/data_manager.dart';
+import 'package:uuid/uuid.dart';
+
 class Step {
   int no;
   String content;
@@ -39,6 +42,21 @@ class Task {
   int status;
   List<Step> steps;
   bool archived;
+  String id;
+
+ static String generateRandomString() {
+  final Uuid uuid = Uuid();
+  return uuid.v4();
+}
+
+static Task fetchTaskWithId(String id) {
+    for(Task task in DataManager.data) {
+      if( task.id == id) {
+        return task;
+      }
+    }
+    return Task(taskName: "", description: "", currentStep: 0, status: 1, steps: [], id: Task.generateRandomString(), archived: false);
+  }
 
   Task({
     required this.taskName,
@@ -46,6 +64,7 @@ class Task {
     required this.currentStep,
     required this.status,
     required this.steps,
+    required this.id,
     this.archived = false,
   });
 
@@ -60,6 +79,7 @@ class Task {
       status: json['status'],
       steps: steps,
       archived: json['archived'],
+      id: json['id']
     );
   }
 
@@ -70,7 +90,9 @@ class Task {
       'current_step': currentStep,
       'status': status,
       'steps': steps.map((step) => step.toJson()).toList(),
-      'archived': archived
+      'archived': archived,
+      'id': id
     };
   }
+
 }

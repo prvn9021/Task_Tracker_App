@@ -109,7 +109,7 @@ Icon taskStatus(int status, Task task) {
   void _unarchiveTask(Task task) {
     setState(() {
       task.archived = false;
-      DataManager.updateData();
+      DataManager.updateData(task, false);
     });
   }
 
@@ -160,7 +160,7 @@ String extractStepWithEllipsis(Task task) {
   void _deleteTask(Task task) {
     setState(() {
       DataManager.data.remove(task);
-      DataManager.updateData();
+      DataManager.updateData(task, true);
     });
   }
 
