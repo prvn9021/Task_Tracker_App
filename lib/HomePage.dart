@@ -181,7 +181,6 @@ class _HomePageState extends State<HomePage> {
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
                           icon: Icons.edit,
-                          label: 'Edit',
                         ),
                         SlidableAction(
                           onPressed: (context) {
@@ -190,7 +189,6 @@ class _HomePageState extends State<HomePage> {
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
                           icon: Icons.delete,
-                          label: 'Delete',
                         ),
                         SlidableAction(
                           onPressed: (context) {
@@ -199,7 +197,6 @@ class _HomePageState extends State<HomePage> {
                           backgroundColor: Colors.grey,
                           foregroundColor: Colors.white,
                           icon: Icons.archive,
-                          label: 'Archive',
                         ),
                       ],
                     ),

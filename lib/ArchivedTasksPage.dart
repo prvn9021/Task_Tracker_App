@@ -43,7 +43,6 @@ class _ArchivedTasksPageState extends State<ArchivedTasksPage> {
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
                           icon: Icons.unarchive,
-                          label: 'Unarchive',
                         ),
                         SlidableAction(
                           onPressed: (context) {
@@ -52,7 +51,6 @@ class _ArchivedTasksPageState extends State<ArchivedTasksPage> {
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
                           icon: Icons.delete,
-                          label: 'Delete',
                         ),
                       ],
                     ),
