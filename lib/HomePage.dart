@@ -7,7 +7,7 @@ import 'package:task_tracker_app/AuthPage.dart';
 import 'package:task_tracker_app/SearchResultPage.dart';
 import 'package:task_tracker_app/data_manager.dart';
 import 'package:task_tracker_app/taskPage.dart';
-import 'package:task_tracker_app/tasks.dart';
+import 'package:task_tracker_app/tasks.dart' as tasks;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter/material.dart';
 
@@ -80,13 +80,13 @@ class _HomePageState extends State<HomePage> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => TaskPage(
-                    Task(
+                    tasks.Task(
                       taskName: "",
                       description: "",
                       currentStep: 0,
                       status: 1,
                       steps: [],
-                      id: Task.generateRandomString(),
+                      id: tasks.Task.generateRandomString(),
                     ),
                     true,
                   ),
@@ -136,13 +136,13 @@ class _HomePageState extends State<HomePage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => TaskPage(
-                              Task(
+                              tasks.Task(
                                 taskName: "",
                                 description: "",
                                 currentStep: 0,
                                 status: 1,
                                 steps: [],
-                                id: Task.generateRandomString(),
+                                id: tasks.Task.generateRandomString(),
                               ),
                               true,
                             ),
@@ -173,7 +173,7 @@ class _HomePageState extends State<HomePage> {
                             await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => TaskPage(Task.fetchTaskWithId(id), false),
+                                builder: (context) => TaskPage(tasks.Task.fetchTaskWithId(id), false),
                               ),
                             );
                             setState(() {});
@@ -205,37 +205,48 @@ class _HomePageState extends State<HomePage> {
                         _showStepDetailsDialog(context, task);
                       },
                       child: ListTile(
-  leading: SizedBox(
-    width: MediaQuery.of(context).size.width * 0.1,
-    child: const Icon(Icons.task),
+  leading: GestureDetector(
+    onTap: () {
+      _showTaskDetailsDialog(context, task);
+    },
+    child: SizedBox(
+      width: MediaQuery.of(context).size.width * 0.1,
+      child: const Icon(Icons.task),
+    ),
   ),
-  title: Row(
-    children: [
-      Expanded(
-        flex: 4, 
-        child: Text(
-          task.taskName,
-          style: const TextStyle(fontStyle: FontStyle.normal, color: Colors.white),
-          textAlign: TextAlign.left,
+  title: GestureDetector(
+    onTap: () {
+      _showStepDetailsDialog(context, task);
+    },
+    child: Row(
+      children: [
+        Expanded(
+          flex: 4, 
+          child: Text(
+            task.taskName,
+            style: const TextStyle(fontStyle: FontStyle.normal, color: Colors.white),
+            textAlign: TextAlign.left,
+          ),
         ),
-      ),
-      Expanded(
-        flex: 4,
-        child: Text(
-          extractStepWithEllipsis(task),
-          style: const TextStyle(color: Colors.grey),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.left,
+        Expanded(
+          flex: 4,
+          child: Text(
+            extractStepWithEllipsis(task),
+            style: const TextStyle(color: Colors.grey),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.left,
+          ),
         ),
-      ),
-    ],
+      ],
+    ),
   ),
   trailing: SizedBox(
     width: MediaQuery.of(context).size.width * 0.1, 
-    child: taskStatus(task.status, task),
+    child: taskStatus(task.status),
   ),
-),                  ),
+),
+                    ),
                   );
                 },
               ),
@@ -243,14 +254,144 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _deleteTask(Task task) {
+void _showTaskDetailsDialog(BuildContext context, tasks.Task task) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.grey[850],
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Task Details',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '${task.taskName}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Description: ${task.description}',
+              style: const TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 3,
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              const Text(
+                'Actions:',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ...task.steps.map((step) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 7,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${step.content}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${step.comment}',
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
+                            const SizedBox(height: 4),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      taskStatus(step.status),
+                      Expanded(
+                        flex: 1,
+                        child: GestureDetector(
+                          onTap: () {
+                            _showStepDetailsDialogForAll(context, step);
+                          },
+                          child: Icon(Icons.visibility, color: Colors.blueGrey[300]),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Close', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+Widget getStatusIcon(String status) {
+  switch (status) {
+    case 'Completed':
+      return const Icon(Icons.check_circle, color: Colors.green);
+    case 'In Progress':
+      return const Icon(Icons.hourglass_empty, color: Colors.orange);
+    case 'Pending':
+      return const Icon(Icons.pending, color: Colors.red);
+    default:
+      return const Icon(Icons.help, color: Colors.grey);
+  }
+}
+
+
+
+  void _deleteTask(tasks.Task task) {
     setState(() {
       DataManager.data.remove(task);
       DataManager.updateData(task, true);
     });
   }
 
-  void _archiveTask(Task task) {
+  void _archiveTask(tasks.Task task) {
     setState(() {
       task.archived = true;
       DataManager.updateData(task, false);
@@ -269,7 +410,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showDeleteConfirmationDialog(BuildContext context, Task task) {
+  void _showDeleteConfirmationDialog(BuildContext context, tasks.Task task) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -298,12 +439,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  List<Task> getUnarchivedList(List<Task> data) {
+  List<tasks.Task> getUnarchivedList(List<tasks.Task> data) {
     return data.where((task) => !task.archived).toList();
   }
+  
 }
 
-Icon taskStatus(int status, Task task) {
+Icon taskStatus(int status) {
   switch (status) {
     case 1:
       return Icon(Icons.power_settings_new, color: Colors.blue);
@@ -316,7 +458,7 @@ Icon taskStatus(int status, Task task) {
   }
 }
 
-String extractStepWithEllipsis(Task task) {
+String extractStepWithEllipsis(tasks.Task task) {
   String info = 'Choose a current step to show';
   for (var step in task.steps) {
     if (task.currentStep == step.no) {
@@ -326,7 +468,7 @@ String extractStepWithEllipsis(Task task) {
   return info;
 }
 
-void _showStepDetailsDialog(BuildContext context, Task task) {
+void _showStepDetailsDialog(BuildContext context, tasks.Task task) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -335,12 +477,11 @@ void _showStepDetailsDialog(BuildContext context, Task task) {
       Icon stepStatusIcon = const Icon(Icons.question_mark);
       String stepStatusText = "Unavailable!";
 
-
       for (var step in task.steps) {
         if (task.currentStep == step.no) {
           stepContent = step.content;
           stepComment = step.comment;
-          stepStatusIcon = taskStatus(step.status, task);
+          stepStatusIcon = taskStatus(step.status);
           stepStatusText = _getStatusText(step.status);
         }
       }
@@ -348,25 +489,40 @@ void _showStepDetailsDialog(BuildContext context, Task task) {
       return AlertDialog(
         backgroundColor: Colors.grey[850],
         title: const Text('Action Details', style: TextStyle(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  'Status: ${stepStatusText}',
-                  style: const TextStyle(color: Colors.white),
-                ),
-                 const SizedBox(width: 10),
+        content: SingleChildScrollView( 
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Status: $stepStatusText',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(width: 10),
                   stepStatusIcon,
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text('Name: $stepContent', style: const TextStyle(color: Colors.white)),
-            const SizedBox(height: 10),
-            Text('Comments: $stepComment', style: const TextStyle(color: Colors.white)),
-          ],
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                stepContent,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                stepComment, 
+                style: const TextStyle(
+                  color: Colors.grey, 
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -380,6 +536,67 @@ void _showStepDetailsDialog(BuildContext context, Task task) {
     },
   );
 }
+
+void _showStepDetailsDialogForAll(BuildContext context, tasks.Step step) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      String stepContent = step.content; 
+      String stepComment = step.comment; 
+      Icon stepStatusIcon = taskStatus(step.status);
+      String stepStatusText = _getStatusText(step.status);
+
+      return AlertDialog(
+        backgroundColor: Colors.grey[850],
+        title: const Text('Action Details', style: TextStyle(color: Colors.white)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Status: $stepStatusText',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(width: 10),
+                  stepStatusIcon,
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                stepContent, 
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                stepComment, 
+                style: const TextStyle(
+                  color: Colors.grey, 
+                  fontSize: 12, 
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Close', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
 String _getStatusText(int status) {
   switch (status) {
