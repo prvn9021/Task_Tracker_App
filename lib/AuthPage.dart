@@ -35,12 +35,12 @@ class _AuthPageState extends State<AuthPage> {
             children: [
               const SizedBox(height: 40),
               Text(
-                isLogin ? "Welcome Back" : "Sign Up",
+                isLogin ? "Welcome to Task Tracker" : "Sign Up",
                 style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
               ),
               Text(
                 isLogin
-                    ? "Enter your credentials to login"
+                    ? "Enter your credentials"
                     : "Create your account",
                 style: TextStyle(fontSize: 16, color: Colors.grey[400]),
               ),

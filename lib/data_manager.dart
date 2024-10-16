@@ -24,7 +24,7 @@ class DataManager  {
         debugPrint('No tasks found for user: ${uid}');
       }
 
-      _data.forEach((task) {
+      /* _data.forEach((task) {
         debugPrint('Task Name: ${task.taskName}');
         debugPrint('Task Description: ${task.description}');
         debugPrint('Current Step: ${task.currentStep}');
@@ -32,7 +32,7 @@ class DataManager  {
         task.steps.forEach((step) {
           debugPrint('Step No: ${step.no}, Step Content: ${step.content}, Comment: ${step.comment}');
         });
-      });
+      });*/
     } catch (e) {
       debugPrint("Error fetching tasks from Firebase: $e");
     }
@@ -85,8 +85,8 @@ class DataManager  {
   if (newTask) {
   jsonList.add(utask.toJson()); 
 }
-debugPrint("------");
-debugPrint(jsonEncode(jsonList));
+//debugPrint("------");
+//debugPrint(jsonEncode(jsonList));
     try {
       await _dbRef.child('users/$uid/data').set(jsonEncode(jsonList));
       _data = jsonList.map((taskJson) => Task.fromJson(taskJson!)).toList();
@@ -105,5 +105,6 @@ debugPrint(jsonEncode(jsonList));
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('uid');
   }
+
 
 }

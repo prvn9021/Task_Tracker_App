@@ -182,7 +182,7 @@ class _TaskPageState extends State<TaskPage> {
                 onTap: () {
                   _showEditDialog(
                     context,
-                    'Step Name', 
+                    'Action Name', 
                     step.content, 
                     (newContent) {
                       setState(() {
@@ -196,14 +196,14 @@ class _TaskPageState extends State<TaskPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Step Name',
+                      'Action Name',
                       style: TextStyle(
                         color: Colors.grey,
                         fontSize: 12,
                       ),
                     ),
                     Text(
-                      step.content.isEmpty ? 'Tap to edit Step Name' : step.content,
+                      step.content.isEmpty ? 'Tap to edit action name' : step.content,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(color: Colors.white),
@@ -377,7 +377,7 @@ void openToggledialog(taskModel.Step step) {
 
       return AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: Text('Choose Status for Step, ${step.content}', style: TextStyle(color: Colors.white),),
+        title: Text('Choose Status for Action, ${step.content}', style: TextStyle(color: Colors.white),),
         content: StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Column(

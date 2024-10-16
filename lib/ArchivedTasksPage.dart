@@ -178,7 +178,7 @@ String extractStepWithEllipsis(Task task) {
 
         return AlertDialog(
           backgroundColor: Colors.grey[850],
-          title: const Text('Step Details', style: TextStyle(color: Colors.white)),
+          title: const Text('Action Details', style: TextStyle(color: Colors.white)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -332,24 +332,40 @@ void _showStepDetailsDialog(BuildContext context, Task task) {
     builder: (BuildContext context) {
       String stepContent = 'No step selected';
       String stepComment = '';
+      Icon stepStatusIcon = const Icon(Icons.question_mark);
+      String stepStatusText = "Unavailable!";
+
 
       for (var step in task.steps) {
         if (task.currentStep == step.no) {
           stepContent = step.content;
           stepComment = step.comment;
+          stepStatusIcon = taskStatus(step.status, task);
+          stepStatusText = _getStatusText(step.status);
         }
       }
 
       return AlertDialog(
         backgroundColor: Colors.grey[850],
-        title: const Text('Step Details', style: TextStyle(color: Colors.white)),
+        title: const Text('Action Details', style: TextStyle(color: Colors.white)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Content: $stepContent', style: const TextStyle(color: Colors.white)),
+            Row(
+              children: [
+                Text(
+                  'Status: ${stepStatusText}',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                 const SizedBox(width: 10),
+                  stepStatusIcon,
+              ],
+            ),
             const SizedBox(height: 10),
-            Text('Comment: $stepComment', style: const TextStyle(color: Colors.white)),
+            Text('Name: $stepContent', style: const TextStyle(color: Colors.white)),
+            const SizedBox(height: 10),
+            Text('Comments: $stepComment', style: const TextStyle(color: Colors.white)),
           ],
         ),
         actions: [
@@ -364,6 +380,20 @@ void _showStepDetailsDialog(BuildContext context, Task task) {
     },
   );
 }
+
+String _getStatusText(int status) {
+  switch (status) {
+    case 1:
+      return 'Not Started';
+    case 2:
+      return 'Active/Waiting';
+    case 3:
+      return 'Completed';
+    default:
+      return 'Unknown';
+  }
+}
+
 
 String getTruncatedString(String input, int length) {
   return input.length > length ? input.substring(0, length) + '...' : input;
