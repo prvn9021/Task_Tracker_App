@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -42,7 +43,7 @@ Widget build(BuildContext context) {
             ),
             const SizedBox(height: 20), 
             Text(
-              isLogin ? "Welcome to Task Tracker" : "Sign Up",
+              isLogin ? "Welcome to\nTask Tracker!" : "Sign Up",
               style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
             ),
             Text(
