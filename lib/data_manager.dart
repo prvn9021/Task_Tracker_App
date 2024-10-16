@@ -35,6 +35,7 @@ class DataManager  {
       });*/
     } catch (e) {
       debugPrint("Error fetching tasks from Firebase: $e");
+      rethrow;
     }
   }
 
@@ -90,7 +91,7 @@ class DataManager  {
     try {
       await _dbRef.child('users/$uid/data').set(jsonEncode(jsonList));
       _data = jsonList.map((taskJson) => Task.fromJson(taskJson!)).toList();
-      debugPrint("Data updated to Firebase for user: $uid");
+      //debugPrint("Data updated to Firebase for user: $uid");
     } catch (e) {
       debugPrint("Error updating data to Firebase: $e");
     }

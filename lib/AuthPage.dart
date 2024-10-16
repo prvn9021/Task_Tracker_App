@@ -23,37 +23,42 @@ class _AuthPageState extends State<AuthPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); 
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
-      home: Scaffold(
-        body: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 40),
-              Text(
-                isLogin ? "Welcome to Task Tracker" : "Sign Up",
-                style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                isLogin
-                    ? "Enter your credentials"
-                    : "Create your account",
-                style: TextStyle(fontSize: 16, color: Colors.grey[400]),
-              ),
-              const SizedBox(height: 40),
-              isLogin ? _loginForm(context) : _signupForm(context),
-              const SizedBox(height: 20),
-              _toggleButton(context),
-            ],
-          ),
+ @override
+Widget build(BuildContext context) {
+  return MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData.dark(),
+    home: Scaffold(
+      body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 40),
+            
+            Image.asset(
+              'assets/logo.jpg',  
+              height: 100,        
+            ),
+            const SizedBox(height: 20), 
+            Text(
+              isLogin ? "Welcome to Task Tracker" : "Sign Up",
+              style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              isLogin ? "Enter your credentials" : "Create your account",
+              style: TextStyle(fontSize: 16, color: Colors.grey[400]),
+            ),
+            const SizedBox(height: 40),
+            isLogin ? _loginForm(context) : _signupForm(context),
+            const SizedBox(height: 20),
+            _toggleButton(context),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _loginForm(BuildContext context) {
     return Form(

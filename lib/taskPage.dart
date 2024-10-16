@@ -112,7 +112,7 @@ class _TaskPageState extends State<TaskPage> {
                 style: ElevatedButton.styleFrom(backgroundColor:Colors.blue ),
 
                 onPressed: _addStep,
-                child: const Text("Add Step", style: TextStyle(color: Colors.white)),
+                child: const Text("Add Action", style: TextStyle(color: Colors.white)),
               ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -178,75 +178,44 @@ class _TaskPageState extends State<TaskPage> {
         Row(
           children: [
             Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  _showEditDialog(
-                    context,
-                    'Action Name', 
-                    step.content, 
-                    (newContent) {
-                      setState(() {
-                        hasUnsavedChanges = true;
-                        step.content = newContent;
-                      });
-                    },
-                  );
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Action Name',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                    Text(
-                      step.content.isEmpty ? 'Tap to edit action name' : step.content,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  _showEditDialog(
-                    context, 
-                    'Comment', 
-                    step.comment, 
-                    (newComment) {
-                      hasUnsavedChanges = true;
-                      setState(() {
-                        step.comment = newComment;
-                      });
-                    },
-                  );
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Comment',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                    Text(
-                      step.comment.isEmpty ? 'Tap to edit Comment' : step.comment,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
+              child:GestureDetector(
+  onTap: () {
+    _showEditDialog(
+      context, 
+      'Edit Action', 
+      step, 
+      (newName, newComment) {
+        setState(() {
+          hasUnsavedChanges = true;
+          step.content = newName;
+          step.comment = newComment;
+        });
+      },
+    );
+  },
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Action',
+        style: TextStyle(color: Colors.grey, fontSize: 12),
+      ),
+      Text(
+        step.content.isEmpty ? 'Tap to edit action name' : step.content,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(color: Colors.white),
+      ),
+      Text(
+        step.comment.isEmpty ? 'Tap to edit comment' : step.comment,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(color: Colors.white),
+      ),
+    ],
+  ),
+),
+
             ),
             const SizedBox(width: 10),
             Checkbox(
@@ -262,40 +231,53 @@ class _TaskPageState extends State<TaskPage> {
               icon: stepStatusIcon(step),
               onPressed: () => {openToggledialog(step)},
             ),
-          ],
-        ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: IconButton(
+            IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: () {
               _removeStep(index);
             },
           ),
+          ],
         ),
       ],
     ),
   );
 }
 
-void _showEditDialog(BuildContext context, String title, String initialText, Function(String) onSave) {
-  TextEditingController textController = TextEditingController(text: initialText);
+void _showEditDialog(BuildContext context, String title, taskModel.Step step, Function(String, String) onSave) {
+  TextEditingController nameController = TextEditingController(text: step.content);
+  TextEditingController commentController = TextEditingController(text: step.comment);
 
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        backgroundColor: Colors.grey[850],  
+        backgroundColor: Colors.grey[850],
         title: Text(title, style: const TextStyle(color: Colors.white)),
-        content: TextField(
-          controller: textController,
-          maxLines: null,  
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            labelText: title,
-            labelStyle: const TextStyle(color: Colors.grey),
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: "Action Name",
+                labelStyle: TextStyle(color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: commentController,
+              maxLines: null,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: "Comment",
+                labelStyle: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -305,10 +287,10 @@ void _showEditDialog(BuildContext context, String title, String initialText, Fun
             child: const Text('Cancel', style: TextStyle(color: Colors.white)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor:Colors.blue ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
             onPressed: () {
-              onSave(textController.text);  
-              Navigator.of(context).pop(); 
+              onSave(nameController.text, commentController.text);
+              Navigator.of(context).pop();
             },
             child: const Text('Save', style: TextStyle(color: Colors.white)),
           ),
@@ -320,10 +302,82 @@ void _showEditDialog(BuildContext context, String title, String initialText, Fun
 
 
   void _addStep() {
-    setState(() {
-    widget.task.steps.add(taskModel.Step(no: (widget.task.steps.length), content: "", comment: "", status:1));
-    });
-  }
+  _showAddStepDialog(context, (stepName, stepComment) {
+    if (stepName.isNotEmpty) {
+      setState(() {
+        widget.task.steps.add(taskModel.Step(
+          no: widget.task.steps.length,
+          content: stepName,
+          comment: stepComment,
+          status: 1,
+        ));
+        hasUnsavedChanges = true;
+      });
+    }
+  });
+}
+
+void _showAddStepDialog(BuildContext context, Function(String, String) onSave) {
+  TextEditingController stepNameController = TextEditingController();
+  TextEditingController stepCommentController = TextEditingController();
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.grey[850],
+        title: const Text('Add New Action', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: stepNameController,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: "Action Name",
+                labelStyle: TextStyle(color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: stepCommentController,
+              maxLines: null,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: "Comment",
+                labelStyle: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+            onPressed: () {
+              if (stepNameController.text.isNotEmpty) {
+                onSave(stepNameController.text, stepCommentController.text);
+                Navigator.of(context).pop();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Action name cannot be empty!'))
+                );
+              }
+            },
+            child: const Text('Save', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      );
+    },
+  );
+}
   
   void _removeStep(int index) {
     setState(() {
