@@ -37,7 +37,7 @@ Widget build(BuildContext context) {
             const SizedBox(height: 40),
             
             Image.asset(
-              'assets/logo.jpg',  
+              'assets/icon/icon.png',  
               height: 100,        
             ),
             const SizedBox(height: 20), 

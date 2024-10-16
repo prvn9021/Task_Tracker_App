@@ -211,7 +211,7 @@ class _HomePageState extends State<HomePage> {
     },
     child: SizedBox(
       width: MediaQuery.of(context).size.width * 0.1,
-      child: const Icon(Icons.task),
+      child: Icon(Icons.task, color: Colors.grey[300]),
     ),
   ),
   title: GestureDetector(
