@@ -1,4 +1,4 @@
-package com.example.task_tracker_app
+package com.pravii_corp.task_tracker
 
 import io.flutter.embedding.android.FlutterActivity
 

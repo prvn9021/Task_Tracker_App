@@ -7,10 +7,23 @@
   },
   "client": [
     {
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuLoR-a71a8aZuX18IELTZTtSU6X6SvH4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
       "client_info": {
-        "mobilesdk_app_id": "1:7054745973:android:710721b7cd0dd70624733c",
+        "mobilesdk_app_id": "1:7054745973:android:9d98ac56159e62ca24733c",
         "android_client_info": {
-          "package_name": "com.example.task_tracker_app"
+          "package_name": "com.pravii_corp.task_tracker"
         }
       },
       "oauth_client": [],
